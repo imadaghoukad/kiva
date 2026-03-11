@@ -1,22 +1,218 @@
 "use client";
 
+import { useEditorStore } from "@/store/useEditorStore";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { 
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight, 
+  AlignJustify,
+  Type
+} from "lucide-react";
+
 export default function RightPanel() {
+  const { layers, activeLayerId, updateTextLayer } = useEditorStore();
+
+  const activeLayer = layers.find((l) => l.id === activeLayerId);
+
+  if (!activeLayer) {
+    return (
+      <aside className="w-80 border-l bg-background flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
+        <p>No layer selected</p>
+        <p className="text-xs mt-2">Click on a text element to edit its properties.</p>
+      </aside>
+    );
+  }
+
+  const handleUpdate = (updates: any) => {
+    updateTextLayer(activeLayer.id, updates);
+  };
+
   return (
-    <aside className="w-72 border-l bg-background flex flex-col">
-      <div className="h-14 border-b flex items-center px-4 font-semibold shrink-0">
+    <aside className="w-80 border-l bg-background flex flex-col">
+      <div className="h-14 border-b flex items-center px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider shrink-0 bg-muted/30">
         Properties
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Placeholder for properties */}
-        <div className="space-y-2">
-          <div className="h-4 w-20 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted animate-pulse" />
+      
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-6">
+          
+          {/* FONT FAMILY & WEIGHT */}
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase">Typography</Label>
+            
+            <Select 
+              value={activeLayer.fontFamily} 
+              onValueChange={(val) => handleUpdate({ fontFamily: val })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Font Family" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Arial">Arial</SelectItem>
+                <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                <SelectItem value="Courier New">Courier New</SelectItem>
+                <SelectItem value="Georgia">Georgia</SelectItem>
+                <SelectItem value="Verdana">Verdana</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Select 
+                value={activeLayer.fontWeight} 
+                onValueChange={(val) => handleUpdate({ fontWeight: val })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Weight" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="normal">Regular</SelectItem>
+                  <SelectItem value="bold">Bold</SelectItem>
+                  <SelectItem value="italic">Italic</SelectItem>
+                  <SelectItem value="bold italic">Bold Italic</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="flex items-center border rounded-md px-3 h-10 shadow-sm">
+                <Input 
+                  type="number" 
+                  value={Math.round(activeLayer.fontSize)} 
+                  onChange={(e) => handleUpdate({ fontSize: Number(e.target.value) })}
+                  className="border-0 p-0 h-6 focus-visible:ring-0 text-right mr-1"
+                />
+                <span className="text-xs text-muted-foreground">px</span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* COLOR */}
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase">Color</Label>
+            <div className="flex items-center space-x-2">
+              <div 
+                className="w-10 h-10 rounded shadow-sm border overflow-hidden shrink-0 cursor-pointer relative"
+              >
+                <input
+                  type="color"
+                  value={activeLayer.fill}
+                  onChange={(e) => handleUpdate({ fill: e.target.value })}
+                  className="absolute inset-[-10px] w-16 h-16 cursor-pointer"
+                />
+              </div>
+              <Input 
+                value={activeLayer.fill} 
+                onChange={(e) => handleUpdate({ fill: e.target.value })}
+                className="flex-1 uppercase font-mono text-sm"
+              />
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* ALIGNMENT CASED */}
+          <div className="space-y-3">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase">Alignment & Case</Label>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* @ts-ignore: Radix UI ToggleGroup strictly enforces string[] despite type="single" in some TS contexts */}
+              <ToggleGroup 
+                type="single" 
+                value={activeLayer.align as unknown as string[]} 
+                onValueChange={(val: any) => val && handleUpdate({ align: val })}
+                className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
+              >
+                <ToggleGroupItem value="left" aria-label="Left align" className="rounded-none px-2.5 flex-1 data-[state=on]:bg-muted">
+                  <AlignLeft className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="center" aria-label="Center align" className="rounded-none px-2.5 flex-1 data-[state=on]:bg-muted">
+                  <AlignCenter className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="right" aria-label="Right align" className="rounded-none px-2.5 flex-1 data-[state=on]:bg-muted">
+                  <AlignRight className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
+
+              {/* @ts-ignore: Radix UI ToggleGroup strictly enforces string[] despite type="single" in some TS contexts */}
+              <ToggleGroup 
+                type="single" 
+                value={activeLayer.textTransform as unknown as string[]} 
+                onValueChange={(val: any) => val && handleUpdate({ textTransform: val })}
+                className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
+              >
+                <ToggleGroupItem value="none" aria-label="Normal case" className="rounded-none px-2 flex-1 data-[state=on]:bg-muted font-serif">
+                  Aa
+                </ToggleGroupItem>
+                <ToggleGroupItem value="lowercase" aria-label="Lowercase" className="rounded-none px-2 flex-1 data-[state=on]:bg-muted font-serif lowercase">
+                  aa
+                </ToggleGroupItem>
+                <ToggleGroupItem value="uppercase" aria-label="Uppercase" className="rounded-none px-2 flex-1 data-[state=on]:bg-muted font-serif uppercase">
+                  AA
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* SPACING */}
+          <div className="space-y-4">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase">Spacing</Label>
+            
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  Lettter Spacing
+                </span>
+                <span className="font-mono">{activeLayer.letterSpacing}</span>
+              </div>
+              <Slider 
+                value={[activeLayer.letterSpacing]} 
+                min={-2} 
+                max={20} 
+                step={0.5}
+                onValueChange={(val: number | readonly number[]) => {
+                  const num = Array.isArray(val) || typeof val !== 'number' ? (val as readonly number[])[0] : val;
+                  handleUpdate({ letterSpacing: num || 0 });
+                }} 
+              />
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  Line Height
+                </span>
+                <span className="font-mono">{activeLayer.lineHeight}</span>
+              </div>
+              <Slider 
+                value={[activeLayer.lineHeight]} 
+                min={0.5} 
+                max={2.5} 
+                step={0.1}
+                onValueChange={(val: number | readonly number[]) => {
+                  const num = Array.isArray(val) || typeof val !== 'number' ? (val as readonly number[])[0] : val;
+                  handleUpdate({ lineHeight: num || 1 });
+                }} 
+              />
+            </div>
+          </div>
+
         </div>
-        <div className="space-y-2">
-          <div className="h-4 w-24 rounded bg-muted" />
-          <div className="h-10 rounded bg-muted animate-pulse" />
-        </div>
-      </div>
+      </ScrollArea>
     </aside>
   );
 }

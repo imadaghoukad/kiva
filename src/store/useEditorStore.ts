@@ -16,6 +16,15 @@ export type TextLayer = {
   fontFamily: string;
   fill: string;
   rotation: number;
+  // Advanced text styling
+  fontWeight: string;
+  align: "left" | "center" | "right" | "justify";
+  letterSpacing: number;
+  lineHeight: number;
+  textTransform: "none" | "uppercase" | "lowercase" | "capitalize";
+  // Layer controls
+  visible: boolean;
+  locked: boolean;
 };
 
 interface EditorState {
@@ -31,6 +40,12 @@ interface EditorState {
   addTextLayer: () => void;
   updateTextLayer: (id: string, updates: Partial<TextLayer>) => void;
   setActiveLayerId: (id: string | null) => void;
+  
+  // Layer list controls
+  removeTextLayer: (id: string) => void;
+  reorderLayer: (id: string, direction: "up" | "down" | "top" | "bottom") => void;
+  toggleLayerVisibility: (id: string) => void;
+  toggleLayerLock: (id: string) => void;
 }
 
 export const PRESETS = {
@@ -62,6 +77,13 @@ export const useEditorStore = create<EditorState>((set) => ({
         fontFamily: "Arial",
         fill: "#000000",
         rotation: 0,
+        fontWeight: "normal",
+        align: "left",
+        letterSpacing: 0,
+        lineHeight: 1.2,
+        textTransform: "none",
+        visible: true,
+        locked: false,
       };
       return { layers: [...state.layers, newLayer], activeLayerId: newLayer.id };
     }),
@@ -74,4 +96,53 @@ export const useEditorStore = create<EditorState>((set) => ({
     })),
 
   setActiveLayerId: (id) => set({ activeLayerId: id }),
+
+  removeTextLayer: (id) =>
+    set((state) => ({
+      layers: state.layers.filter((layer) => layer.id !== id),
+      activeLayerId: state.activeLayerId === id ? null : state.activeLayerId,
+    })),
+
+  reorderLayer: (id, direction) =>
+    set((state) => {
+      const index = state.layers.findIndex((l) => l.id === id);
+      if (index < 0) return state;
+
+      const newLayers = [...state.layers];
+      const layer = newLayers.splice(index, 1)[0];
+
+      if (direction === "up") {
+        newLayers.splice(Math.min(index + 1, newLayers.length), 0, layer);
+      } else if (direction === "down") {
+        newLayers.splice(Math.max(index - 1, 0), 0, layer);
+      } else if (direction === "top") {
+        newLayers.push(layer);
+      } else if (direction === "bottom") {
+        newLayers.unshift(layer);
+      }
+
+      return { layers: newLayers };
+    }),
+
+  toggleLayerVisibility: (id) =>
+    set((state) => ({
+      layers: state.layers.map((layer) => {
+        if (layer.id === id) {
+          const newVisible = !layer.visible;
+          // Deselect layer if it's being hidden
+          if (!newVisible && state.activeLayerId === id) {
+            state.activeLayerId = null;
+          }
+          return { ...layer, visible: newVisible };
+        }
+        return layer;
+      }),
+    })),
+
+  toggleLayerLock: (id) =>
+    set((state) => ({
+      layers: state.layers.map((layer) =>
+        layer.id === id ? { ...layer, locked: !layer.locked } : layer
+      ),
+    })),
 }));

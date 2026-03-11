@@ -121,49 +121,66 @@ export default function CanvasWorkarea() {
               />
             )}
             
-            {layers.map((layer) => (
-              <React.Fragment key={layer.id}>
-                <Text
-                  id={layer.id}
-                  text={layer.text}
-                  x={layer.x}
-                  y={layer.y}
-                  fontSize={layer.fontSize}
-                  fontFamily={layer.fontFamily}
-                  fill={layer.fill}
-                  rotation={layer.rotation}
-                  draggable
-                  visible={editingId !== layer.id}
-                  onClick={() => {
-                    setActiveLayerId(layer.id);
-                  }}
-                  onTap={() => {
-                    setActiveLayerId(layer.id);
-                  }}
-                  onDblClick={() => handleTextDblClick(layer.id)}
-                  onDblTap={() => handleTextDblClick(layer.id)}
-                  onDragEnd={(e) => {
-                    updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
-                  }}
-                  onTransformEnd={(e) => {
-                    const node = e.target;
-                    const scaleX = node.scaleX();
-                    const scaleY = node.scaleY();
-                    
-                    // Reset scale, update font size and width internally
-                    node.scaleX(1);
-                    node.scaleY(1);
-                    
-                    updateTextLayer(layer.id, {
-                      x: node.x(),
-                      y: node.y(),
-                      rotation: node.rotation(),
-                      fontSize: Math.max(5, layer.fontSize * scaleY),
-                    });
-                  }}
-                />
-              </React.Fragment>
-            ))}
+            {layers.map((layer) => {
+              // Handle CSS text-transform via JS before it hits Konva
+              let displayText = layer.text;
+              if (layer.textTransform === "uppercase") displayText = displayText.toUpperCase();
+              else if (layer.textTransform === "lowercase") displayText = displayText.toLowerCase();
+              else if (layer.textTransform === "capitalize") displayText = displayText.replace(/\b\w/g, c => c.toUpperCase());
+
+              const isEditing = editingId === layer.id;
+
+              return (
+                <React.Fragment key={layer.id}>
+                  <Text
+                    id={layer.id}
+                    text={displayText}
+                    x={layer.x}
+                    y={layer.y}
+                    fontSize={layer.fontSize}
+                    fontFamily={layer.fontFamily}
+                    fontStyle={layer.fontWeight}
+                    fill={layer.fill}
+                    rotation={layer.rotation}
+                    align={layer.align}
+                    letterSpacing={layer.letterSpacing}
+                    lineHeight={layer.lineHeight}
+                    draggable={!layer.locked && layer.visible && !isEditing}
+                    visible={layer.visible && !isEditing}
+                    onClick={() => {
+                      if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                    }}
+                    onTap={() => {
+                      if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                    }}
+                    onDblClick={() => {
+                      if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                    }}
+                    onDblTap={() => {
+                      if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                    }}
+                    onDragEnd={(e) => {
+                      updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
+                    }}
+                    onTransformEnd={(e) => {
+                      const node = e.target;
+                      const scaleX = node.scaleX();
+                      const scaleY = node.scaleY();
+                      
+                      node.scaleX(1);
+                      node.scaleY(1);
+                      
+                      updateTextLayer(layer.id, {
+                        x: node.x(),
+                        y: node.y(),
+                        rotation: node.rotation(),
+                        fontSize: Math.max(5, layer.fontSize * scaleY),
+                      });
+                    }}
+                  />
+                </React.Fragment>
+              );
+            })}
 
             <Transformer 
               ref={trRef} 
@@ -188,11 +205,16 @@ export default function CanvasWorkarea() {
                 position: "absolute",
                 top: layer.y * scale,
                 left: layer.x * scale,
-                width: `${layer.fontSize * 0.6 * layer.text.length * scale + 50}px`,
-                height: `${layer.fontSize * 1.5 * scale}px`,
+                width: `${Math.max(100, (layer.fontSize * 0.6 * layer.text.length + 50)) * scale}px`,
+                height: `${layer.fontSize * layer.lineHeight * scale}px`,
                 fontSize: `${layer.fontSize * scale}px`,
                 fontFamily: layer.fontFamily,
+                fontWeight: layer.fontWeight.includes("bold") ? "bold" : "normal",
+                fontStyle: layer.fontWeight.includes("italic") ? "italic" : "normal",
                 color: layer.fill,
+                textAlign: layer.align,
+                letterSpacing: `${layer.letterSpacing * scale}px`,
+                textTransform: layer.textTransform === "none" ? "none" : layer.textTransform as any,
                 transform: `rotate(${layer.rotation}deg)`,
                 transformOrigin: "top left",
                 border: "1px dashed #0099ff",
@@ -201,7 +223,7 @@ export default function CanvasWorkarea() {
                 background: "transparent",
                 outline: "none",
                 resize: "none",
-                lineHeight: 1,
+                lineHeight: layer.lineHeight,
                 overflow: "hidden"
               }}
             />
