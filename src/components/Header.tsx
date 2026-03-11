@@ -15,6 +15,7 @@ export function Header() {
 
   // Close sheet when navigation happens
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [pathname]);
 
