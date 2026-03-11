@@ -4,6 +4,18 @@ import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongoose";
 import { User } from "@/models/User";
 
+// Declare module to augment NextAuth types to include user ID in Session
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    }
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({

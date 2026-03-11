@@ -36,7 +36,14 @@ interface EditorState {
 
   layers: TextLayer[];
   activeLayerId: string | null;
-  
+  designId: string | null;
+  designName: string;
+  isSaving: boolean;
+  lastSaved: Date | null;
+
+  // Actions
+  setDesignId: (id: string | null) => void;
+  setDesignName: (name: string) => void;
   addTextLayer: () => void;
   updateTextLayer: (id: string, updates: Partial<TextLayer>) => void;
   setActiveLayerId: (id: string | null) => void;
@@ -50,6 +57,17 @@ interface EditorState {
   // Template hydration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   applyTemplate: (template: any) => void;
+
+  // Persistence
+  saveDesign: () => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  loadDesign: (design: any) => void;
+  
+  // Export Hook
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stageRef: any | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setStageRef: (ref: any) => void;
 }
 
 export const PRESETS = {
@@ -59,7 +77,7 @@ export const PRESETS = {
   "Facebook Cover": { width: 820, height: 312 },
 };
 
-export const useEditorStore = create<EditorState>((set) => ({
+export const useEditorStore = create<EditorState>((set, get) => ({
   canvasSize: PRESETS["Facebook Post"],
   setCanvasSize: (size) => set({ canvasSize: size }),
 
@@ -68,6 +86,15 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   layers: [],
   activeLayerId: null,
+  designId: null,
+  designName: "Untitled Design",
+  isSaving: false,
+  lastSaved: null,
+  stageRef: null,
+
+  setDesignId: (id) => set({ designId: id }),
+  setDesignName: (name) => set({ designName: name }),
+  setStageRef: (ref) => set({ stageRef: ref }),
 
   addTextLayer: () =>
     set((state) => {
@@ -167,4 +194,52 @@ export const useEditorStore = create<EditorState>((set) => ({
         activeLayerId: null, // Clear selection
       };
     }),
+    
+  saveDesign: async () => {
+    const state = get();
+    set({ isSaving: true });
+    try {
+      const payload = {
+        name: state.designName,
+        canvasSize: state.canvasSize,
+        bgImageUrl: state.bgImageUrl,
+        layers: state.layers,
+      };
+
+      if (state.designId) {
+        // Update existing
+        await fetch(`/api/designs/${state.designId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        // Create new
+        const res = await fetch("/api/designs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          set({ designId: data._id });
+        }
+      }
+      set({ lastSaved: new Date() });
+    } catch (error) {
+      console.error("Failed to save design", error);
+    } finally {
+      set({ isSaving: false });
+    }
+  },
+
+  loadDesign: (design) => 
+    set(() => ({
+      designId: design._id,
+      designName: design.name,
+      canvasSize: design.canvasSize,
+      bgImageUrl: design.bgImageUrl || null,
+      layers: design.layers || [],
+      activeLayerId: null,
+    })),
 }));

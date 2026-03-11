@@ -7,9 +7,19 @@ import { useEditorStore } from "@/store/useEditorStore";
 import Konva from "konva";
 
 export default function CanvasWorkarea() {
+  const setStageRef = useEditorStore((state) => state.setStageRef);
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<Konva.Stage>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stageRef = useRef<any>(null);
   const trRef = useRef<Konva.Transformer>(null);
+  
+  // Expose the stage reference to the store so the toolbar can export it
+  useEffect(() => {
+    if (stageRef.current) {
+      setStageRef(stageRef.current);
+    }
+  }, [setStageRef]);
   
   const [scale, setScale] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);

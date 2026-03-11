@@ -8,8 +8,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, LayoutTemplate } from 'lucide-react';
 import dynamic from "next/dynamic";
 const CanvasWorkarea = dynamic(() => import("./CanvasWorkarea"), { ssr: false });
+import { useEffect } from "react";
+import { useEditorStore } from "@/store/useEditorStore";
 
-export default function EditorLayout() {
+export default function EditorLayout({ initialDesign }: { initialDesign?: unknown }) {
+  const loadDesign = useEditorStore((state) => state.loadDesign);
+
+  useEffect(() => {
+    if (initialDesign) {
+      loadDesign(initialDesign);
+    }
+  }, [initialDesign, loadDesign]);
+
   return (
     <div className="flex h-full w-full flex-col">
       <TopToolbar />
