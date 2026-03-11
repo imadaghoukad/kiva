@@ -1,0 +1,213 @@
+"use client";
+
+import React, { useRef, useEffect, useState } from "react";
+import { Stage, Layer, Image as KonvaImage, Rect, Text, Transformer } from "react-konva";
+import useImage from "use-image";
+import { useEditorStore } from "@/store/useEditorStore";
+import Konva from "konva";
+
+export default function CanvasWorkarea() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<Konva.Stage>(null);
+  const trRef = useRef<Konva.Transformer>(null);
+  
+  const [scale, setScale] = useState(1);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const {
+    canvasSize,
+    bgImageUrl,
+    setBgImageUrl,
+    layers,
+    activeLayerId,
+    setActiveLayerId,
+    updateTextLayer,
+  } = useEditorStore();
+
+  const [bgImage] = useImage(bgImageUrl || "", "anonymous");
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateScale = () => {
+      const padding = 60;
+      const cw = container.clientWidth - padding * 2;
+      const ch = container.clientHeight - padding * 2;
+
+      const scaleX = cw / canvasSize.width;
+      const scaleY = ch / canvasSize.height;
+      const newScale = Math.min(scaleX, scaleY, 1);
+      setScale(newScale);
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, [canvasSize]);
+
+  // Attach transformer
+  useEffect(() => {
+    if (activeLayerId && trRef.current && stageRef.current) {
+      const activeNode = stageRef.current.findOne(`#${activeLayerId}`);
+      if (activeNode) {
+        trRef.current.nodes([activeNode]);
+        trRef.current.getLayer()?.batchDraw();
+      }
+    } else if (trRef.current) {
+      trRef.current.nodes([]);
+      trRef.current.getLayer()?.batchDraw();
+    }
+  }, [activeLayerId, layers]);
+
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files?.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (file.type.startsWith("image/")) {
+        setBgImageUrl(URL.createObjectURL(file));
+      }
+    }
+  };
+
+  const checkDeselect = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+    const clickedOnEmpty = e.target === e.target.getStage() || e.target.name() === "bgRect" || e.target.name() === "bgImage";
+    if (clickedOnEmpty) {
+      setActiveLayerId(null);
+      setEditingId(null);
+    }
+  };
+
+  const handleTextDblClick = (layerId: string) => {
+    setEditingId(layerId);
+    setActiveLayerId(layerId);
+  };
+
+  return (
+    <div 
+      ref={containerRef} 
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <div
+        className="relative shadow-lg bg-white"
+        style={{
+          width: canvasSize.width * scale,
+          height: canvasSize.height * scale,
+        }}
+      >
+        <Stage
+          ref={stageRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          scale={{ x: scale, y: scale }}
+          onMouseDown={checkDeselect}
+          onTouchStart={checkDeselect}
+        >
+          <Layer>
+            <Rect name="bgRect" x={0} y={0} width={canvasSize.width} height={canvasSize.height} fill="#ffffff" />
+            
+            {bgImage && (
+              <KonvaImage name="bgImage" image={bgImage} width={canvasSize.width} height={canvasSize.height} />
+            )}
+            
+            {!bgImage && (
+              <Text 
+                name="bgText" text="Drag & Drop Background Image"
+                x={0} y={canvasSize.height / 2} width={canvasSize.width} align="center"
+                fontSize={24} fill="#aaa" listening={false}
+              />
+            )}
+            
+            {layers.map((layer) => (
+              <React.Fragment key={layer.id}>
+                <Text
+                  id={layer.id}
+                  text={layer.text}
+                  x={layer.x}
+                  y={layer.y}
+                  fontSize={layer.fontSize}
+                  fontFamily={layer.fontFamily}
+                  fill={layer.fill}
+                  rotation={layer.rotation}
+                  draggable
+                  visible={editingId !== layer.id}
+                  onClick={() => {
+                    setActiveLayerId(layer.id);
+                  }}
+                  onTap={() => {
+                    setActiveLayerId(layer.id);
+                  }}
+                  onDblClick={() => handleTextDblClick(layer.id)}
+                  onDblTap={() => handleTextDblClick(layer.id)}
+                  onDragEnd={(e) => {
+                    updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
+                  }}
+                  onTransformEnd={(e) => {
+                    const node = e.target;
+                    const scaleX = node.scaleX();
+                    const scaleY = node.scaleY();
+                    
+                    // Reset scale, update font size and width internally
+                    node.scaleX(1);
+                    node.scaleY(1);
+                    
+                    updateTextLayer(layer.id, {
+                      x: node.x(),
+                      y: node.y(),
+                      rotation: node.rotation(),
+                      fontSize: Math.max(5, layer.fontSize * scaleY),
+                    });
+                  }}
+                />
+              </React.Fragment>
+            ))}
+
+            <Transformer 
+              ref={trRef} 
+              boundBoxFunc={(oldBox, newBox) => (newBox.width < 10 || newBox.height < 10 ? oldBox : newBox)}
+              enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
+            />
+          </Layer>
+        </Stage>
+
+        {/* HTML Input Overlay for Text Editing */}
+        {editingId && (() => {
+          const layer = layers.find(l => l.id === editingId);
+          if (!layer) return null;
+          
+          return (
+            <textarea
+              autoFocus
+              defaultValue={layer.text}
+              onChange={(e) => updateTextLayer(layer.id, { text: e.target.value })}
+              onBlur={() => setEditingId(null)}
+              style={{
+                position: "absolute",
+                top: layer.y * scale,
+                left: layer.x * scale,
+                width: `${layer.fontSize * 0.6 * layer.text.length * scale + 50}px`,
+                height: `${layer.fontSize * 1.5 * scale}px`,
+                fontSize: `${layer.fontSize * scale}px`,
+                fontFamily: layer.fontFamily,
+                color: layer.fill,
+                transform: `rotate(${layer.rotation}deg)`,
+                transformOrigin: "top left",
+                border: "1px dashed #0099ff",
+                padding: 0,
+                margin: 0,
+                background: "transparent",
+                outline: "none",
+                resize: "none",
+                lineHeight: 1,
+                overflow: "hidden"
+              }}
+            />
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
