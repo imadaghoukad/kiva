@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Layers, LayoutTemplate } from 'lucide-react';
 import dynamic from "next/dynamic";
 const CanvasWorkarea = dynamic(() => import("./CanvasWorkarea"), { ssr: false });
-import { useEffect } from "react";
 import { useEditorStore } from "@/store/useEditorStore";
+import { useTranslation } from "@/components/providers/I18nProvider";
+import { useEffect } from "react";
 
 export default function EditorLayout({ initialDesign }: { initialDesign?: unknown }) {
+  const { t } = useTranslation();
   const loadDesign = useEditorStore((state) => state.loadDesign);
 
   useEffect(() => {
@@ -29,12 +31,12 @@ export default function EditorLayout({ initialDesign }: { initialDesign?: unknow
             <div className="border-b px-4 py-2">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="templates">
-                  <LayoutTemplate className="w-4 h-4 mr-2" />
-                  Templates
+                  <LayoutTemplate className="w-4 h-4 me-2" />
+                  {t("templates", "panels")}
                 </TabsTrigger>
                 <TabsTrigger value="layers">
-                  <Layers className="w-4 h-4 mr-2" />
-                  Layers
+                  <Layers className="w-4 h-4 me-2" />
+                  {t("layers", "panels")}
                 </TabsTrigger>
               </TabsList>
             </div>

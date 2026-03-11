@@ -5,8 +5,10 @@ import { Stage, Layer, Image as KonvaImage, Rect, Text, Transformer } from "reac
 import useImage from "use-image";
 import { useEditorStore } from "@/store/useEditorStore";
 import Konva from "konva";
+import { useLocaleStore } from "@/store/useLocaleStore";
 
 export default function CanvasWorkarea() {
+  const { dir } = useLocaleStore();
   const setStageRef = useEditorStore((state) => state.setStageRef);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -153,6 +155,7 @@ export default function CanvasWorkarea() {
                     fill={layer.fill}
                     rotation={layer.rotation}
                     align={layer.align}
+                    direction={dir}
                     letterSpacing={layer.letterSpacing}
                     lineHeight={layer.lineHeight}
                     draggable={!layer.locked && layer.visible && !isEditing}
@@ -208,6 +211,7 @@ export default function CanvasWorkarea() {
             <textarea
               autoFocus
               defaultValue={layer.text}
+              dir={dir}
               onChange={(e) => updateTextLayer(layer.id, { text: e.target.value })}
               onBlur={() => setEditingId(null)}
               style={{
@@ -217,22 +221,23 @@ export default function CanvasWorkarea() {
                 width: `${Math.max(100, (layer.fontSize * 0.6 * layer.text.length + 50)) * scale}px`,
                 height: `${layer.fontSize * layer.lineHeight * scale}px`,
                 fontSize: `${layer.fontSize * scale}px`,
+                border: "1px dashed #0099ff",
+                padding: "0px",
+                margin: "0px",
+                background: "transparent",
+                outline: "none",
+                resize: "none",
+                color: layer.fill,
                 fontFamily: layer.fontFamily,
                 fontWeight: layer.fontWeight.includes("bold") ? "bold" : "normal",
                 fontStyle: layer.fontWeight.includes("italic") ? "italic" : "normal",
-                color: layer.fill,
                 textAlign: layer.align,
+                direction: dir,
+                lineHeight: layer.lineHeight,
                 letterSpacing: `${layer.letterSpacing * scale}px`,
                 textTransform: layer.textTransform === "none" ? "none" : layer.textTransform as "none" | "capitalize" | "uppercase" | "lowercase",
                 transform: `rotate(${layer.rotation}deg)`,
                 transformOrigin: "top left",
-                border: "1px dashed #0099ff",
-                padding: 0,
-                margin: 0,
-                background: "transparent",
-                outline: "none",
-                resize: "none",
-                lineHeight: layer.lineHeight,
                 overflow: "hidden"
               }}
             />

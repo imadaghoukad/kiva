@@ -1,0 +1,30 @@
+{
+  "editor": {
+    "untitledDesign": "Untitled Design",
+    "save": "Save",
+    "saving": "Saving...",
+    "export": "Export",
+    "canvasSize": "Canvas Size",
+    "addText": "Add Text"
+  },
+  "panels": {
+    "text": "Text Properties",
+    "templates": "Templates",
+    "layers": "Layers"
+  },
+  "layerList": {
+    "noLayers": "No layers found."
+  },
+  "properties": {
+    "fontFamily": "Font Family",
+    "fontSize": "Font Size",
+    "lineHeight": "Line Height",
+    "letterSpacing": "Letter Spacing"
+  },
+  "dashboard": {
+    "myDesigns": "My Designs",
+    "createDesign": "Create Design",
+    "noDesigns": "No designs yet",
+    "noDesignsDesc": "You don't have any saved designs. Start creating beautiful graphics today."
+  }
+}

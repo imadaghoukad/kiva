@@ -14,8 +14,10 @@ import {
   GripVertical
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/components/providers/I18nProvider";
 
 export default function LayerList() {
+  const { t } = useTranslation();
   const { 
     layers, 
     activeLayerId, 
@@ -33,13 +35,13 @@ export default function LayerList() {
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden border-t">
       <div className="h-10 border-b flex items-center px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider shrink-0 bg-muted/30">
-        Layers
+        {t("layers", "panels")}
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
           {displayLayers.length === 0 && (
             <div className="text-center text-sm text-muted-foreground py-8">
-              No layers yet
+              {t("noLayers", "layerList")}
             </div>
           )}
           {displayLayers.map((layer) => {
@@ -54,12 +56,12 @@ export default function LayerList() {
                   (layer.locked || !layer.visible) && "opacity-60 cursor-default"
                 )}
               >
-                <div className="flex items-center text-muted-foreground/50 mr-2 cursor-grab active:cursor-grabbing">
+                <div className="flex items-center text-muted-foreground/50 me-2 cursor-grab active:cursor-grabbing">
                    {/* In a fully real app, we'd use react-beautiful-dnd here */}
                    <GripVertical className="h-4 w-4" />
                 </div>
                 
-                <div className="flex-1 truncate mr-2">
+                <div className="flex-1 truncate me-2">
                   {layer.text || "Empty text"}
                 </div>
                 
@@ -69,7 +71,7 @@ export default function LayerList() {
                   !isActive && layer.visible && !layer.locked ? "opacity-0 group-hover:opacity-100 transition-opacity" : "opacity-100"
                 )}>
                   {isActive && (
-                    <div className="flex mr-2 space-x-0.5 bg-background rounded border shadow-sm">
+                    <div className="flex me-2 space-x-0.5 bg-background rounded border shadow-sm">
                       <Button variant="ghost" size="icon" className="h-6 w-6 rounded-none rounded-l" onClick={(e) => { e.stopPropagation(); reorderLayer(layer.id, "up"); }}>
                         <ArrowUp className="h-3 w-3" />
                       </Button>

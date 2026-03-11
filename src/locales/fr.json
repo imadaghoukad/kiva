@@ -1,0 +1,30 @@
+{
+  "editor": {
+    "untitledDesign": "Conception sans nom",
+    "save": "Enregistrer",
+    "saving": "Enregistrement...",
+    "export": "Exporter",
+    "canvasSize": "Taille",
+    "addText": "Ajouter"
+  },
+  "panels": {
+    "text": "Propriétés du texte",
+    "templates": "Modèles",
+    "layers": "Calques"
+  },
+  "layerList": {
+    "noLayers": "Aucun calque trouvé."
+  },
+  "properties": {
+    "fontFamily": "Police",
+    "fontSize": "Taille de police",
+    "lineHeight": "Hauteur de ligne",
+    "letterSpacing": "Espacement"
+  },
+  "dashboard": {
+    "myDesigns": "Mes conceptions",
+    "createDesign": "Créer",
+    "noDesigns": "Aucune conception",
+    "noDesignsDesc": "Vous n'avez pas encore de conceptions. Commencez à créer de superbes graphismes."
+  }
+}

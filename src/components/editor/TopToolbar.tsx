@@ -10,8 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslation } from "@/components/providers/I18nProvider";
+import { useLocaleStore, Locale } from "@/store/useLocaleStore";
 
 export default function TopToolbar() {
+  const { t } = useTranslation();
+  const { locale, setLocale, dir } = useLocaleStore();
   const canvasSize = useEditorStore((state) => state.canvasSize);
   const setCanvasSize = useEditorStore((state) => state.setCanvasSize);
   const addTextLayer = useEditorStore((state) => state.addTextLayer);
@@ -54,10 +58,11 @@ export default function TopToolbar() {
     <header className="flex h-14 shrink-0 items-center justify-between border-b bg-background px-4">
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="icon" type="button" onClick={() => window.location.href = '/designs'}>
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className={`h-5 w-5 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
         </Button>
         <input 
           value={designName}
+          placeholder={t("untitledDesign")}
           onChange={(e) => setDesignName(e.target.value)}
           className="font-semibold hidden sm:inline-block bg-transparent border-0 focus:ring-0 w-48 truncate"
         />
@@ -72,7 +77,7 @@ export default function TopToolbar() {
           }}
         >
           <SelectTrigger className="w-[180px] h-8 text-xs bg-muted/50 border-0 focus:ring-0">
-            <SelectValue placeholder="Canvas Size" />
+            <SelectValue placeholder={t("canvasSize")} />
           </SelectTrigger>
           <SelectContent>
             {Object.keys(PRESETS).map((preset) => (
@@ -87,21 +92,36 @@ export default function TopToolbar() {
         
         <Button variant="ghost" size="sm" onClick={addTextLayer} className="h-8 gap-2">
           <Type className="h-4 w-4" />
-          <span className="hidden sm:inline-block">Add Text</span>
+          <span className="hidden sm:inline-block">{t("addText")}</span>
         </Button>
       </div>
       
       <div className="flex items-center space-x-2">
+        <Select 
+          value={locale} 
+          onValueChange={(val) => setLocale(val as Locale)}
+        >
+          <SelectTrigger className="w-[80px] h-8 text-xs focus:ring-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="en">EN</SelectItem>
+            <SelectItem value="fr">FR</SelectItem>
+            <SelectItem value="ar">AR</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="h-4 w-px bg-border mx-1" />
         {lastSaved && (
           <div className="text-xs text-muted-foreground mr-4 hidden md:block">
             Saved {lastSaved.toLocaleTimeString()}
           </div>
         )}
         <Button variant="outline" size="sm" onClick={saveDesign} disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? t("saving") : t("save")}
         </Button>
         <Button size="sm" onClick={handleExport} disabled={!stageRef}>
-          Export
+          {t("export")}
         </Button>
       </div>
     </header>

@@ -13,21 +13,26 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectGroup,
+  SelectLabel
 } from "@/components/ui/select";
 import { 
   AlignLeft, 
   AlignCenter, 
   AlignRight, 
 } from "lucide-react";
+import { useTranslation } from "@/components/providers/I18nProvider";
+import { ARABIC_FONTS, LATIN_FONTS, loadFont } from "@/lib/fonts";
 
 export default function RightPanel() {
+  const { t } = useTranslation();
   const { layers, activeLayerId, updateTextLayer } = useEditorStore();
 
   const activeLayer = layers.find((l) => l.id === activeLayerId);
 
   if (!activeLayer) {
     return (
-      <aside className="w-80 border-l bg-background flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
+      <aside className="w-80 border-s bg-background flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
         <p>No layer selected</p>
         <p className="text-xs mt-2">Click on a text element to edit its properties.</p>
       </aside>
@@ -40,9 +45,9 @@ export default function RightPanel() {
   };
 
   return (
-    <aside className="w-80 border-l bg-background flex flex-col">
+    <aside className="w-80 border-s bg-background flex flex-col">
       <div className="h-14 border-b flex items-center px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider shrink-0 bg-muted/30">
-        Properties
+        {t("text", "panels")}
       </div>
       
       <ScrollArea className="flex-1">
@@ -53,18 +58,34 @@ export default function RightPanel() {
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Typography</Label>
             
             <Select 
-              value={activeLayer.fontFamily} 
-              onValueChange={(val) => handleUpdate({ fontFamily: val })}
+              value={activeLayer.fontFamily || ""} 
+              onValueChange={(val: string | null) => {
+                if (val) {
+                  loadFont(val);
+                  handleUpdate({ fontFamily: val });
+                }
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Font Family" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Arial">Arial</SelectItem>
-                <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                <SelectItem value="Courier New">Courier New</SelectItem>
-                <SelectItem value="Georgia">Georgia</SelectItem>
-                <SelectItem value="Verdana">Verdana</SelectItem>
+                <SelectGroup>
+                  <SelectLabel>Latin Fonts</SelectLabel>
+                  {LATIN_FONTS.map((font) => (
+                    <SelectItem key={font.name} value={font.name} style={{ fontFamily: font.name }}>
+                      {font.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Arabic Fonts</SelectLabel>
+                  {ARABIC_FONTS.map((font) => (
+                    <SelectItem key={font.name} value={font.name} style={{ fontFamily: font.name }}>
+                      {font.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
 
@@ -89,7 +110,7 @@ export default function RightPanel() {
                   type="number" 
                   value={Math.round(activeLayer.fontSize)} 
                   onChange={(e) => handleUpdate({ fontSize: Number(e.target.value) })}
-                  className="border-0 p-0 h-6 focus-visible:ring-0 text-right mr-1"
+                  className="border-0 p-0 h-6 focus-visible:ring-0 text-end me-1"
                 />
                 <span className="text-xs text-muted-foreground">px</span>
               </div>

@@ -1,0 +1,30 @@
+{
+  "editor": {
+    "untitledDesign": "تصميم بدون عنوان",
+    "save": "حفظ",
+    "saving": "جاري الحفظ...",
+    "export": "تصدير",
+    "canvasSize": "حجم اللوحة",
+    "addText": "إضافة نص"
+  },
+  "panels": {
+    "text": "خصائص النص",
+    "templates": "قوالب",
+    "layers": "طبقات"
+  },
+  "layerList": {
+    "noLayers": "لم يتم العثور على طبقات."
+  },
+  "properties": {
+    "fontFamily": "نوع الخط",
+    "fontSize": "حجم الخط",
+    "lineHeight": "ارتفاع السطر",
+    "letterSpacing": "تباعد الأحرف"
+  },
+  "dashboard": {
+    "myDesigns": "تصاميمي",
+    "createDesign": "إنشاء تصميم",
+    "noDesigns": "لا توجد تصاميم",
+    "noDesignsDesc": "ليس لديك أي تصاميم محفوظة. ابدأ بإنشاء رسومات جميلة."
+  }
+}

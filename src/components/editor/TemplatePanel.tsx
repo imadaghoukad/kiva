@@ -29,7 +29,7 @@ export default function TemplatePanel() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full bg-background border-r">
+    <div className="flex flex-col h-full bg-background border-e">
       <div className="p-4 border-b">
         <h2 className="text-sm font-semibold uppercase text-muted-foreground">Templates</h2>
       </div>
