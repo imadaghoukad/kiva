@@ -28,6 +28,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof loginSchema>>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: (zodResolver as any)(loginSchema),
     defaultValues: {
       email: "",
@@ -63,6 +64,7 @@ export default function LoginPage() {
             <FormField
               control={form.control}
               name="email"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               render={({ field }: any) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
@@ -76,6 +78,7 @@ export default function LoginPage() {
             <FormField
               control={form.control}
               name="password"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               render={({ field }: any) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>

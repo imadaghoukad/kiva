@@ -3,16 +3,14 @@
 import { useEditorStore } from "@/store/useEditorStore";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Eye, 
-  EyeOff, 
-  Lock, 
-  Unlock, 
-  Trash2, 
-  ArrowUp, 
-  ArrowDown, 
-  ArrowDownToLine,
-  ArrowUpToLine,
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Unlock,
+  Trash2,
+  ArrowUp,
+  ArrowDown,
   GripVertical
 } from "lucide-react";
 import { cn } from "@/lib/utils";

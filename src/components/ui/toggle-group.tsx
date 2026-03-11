@@ -29,8 +29,8 @@ const ToggleGroup = React.forwardRef<
       spacing?: number
       orientation?: "horizontal" | "vertical"
       type?: "single" | "multiple"
-      value?: any
-      onValueChange?: any
+      value?: string
+      onValueChange?: (value: string) => void
     }
 >(
   (

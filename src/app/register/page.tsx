@@ -29,6 +29,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   const form = useForm<z.infer<typeof registerSchema>>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: (zodResolver as any)(registerSchema),
     defaultValues: {
       name: "",
@@ -64,6 +65,7 @@ export default function RegisterPage() {
         router.push("/designs");
         router.refresh();
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }
@@ -81,6 +83,7 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="name"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               render={({ field }: any) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
@@ -94,6 +97,7 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="email"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               render={({ field }: any) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
@@ -107,6 +111,7 @@ export default function RegisterPage() {
             <FormField
               control={form.control}
               name="password"
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               render={({ field }: any) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>

@@ -164,7 +164,6 @@ export default function CanvasWorkarea() {
                     }}
                     onTransformEnd={(e) => {
                       const node = e.target;
-                      const scaleX = node.scaleX();
                       const scaleY = node.scaleY();
                       
                       node.scaleX(1);
@@ -214,7 +213,7 @@ export default function CanvasWorkarea() {
                 color: layer.fill,
                 textAlign: layer.align,
                 letterSpacing: `${layer.letterSpacing * scale}px`,
-                textTransform: layer.textTransform === "none" ? "none" : layer.textTransform as any,
+                textTransform: layer.textTransform === "none" ? "none" : layer.textTransform as "none" | "capitalize" | "uppercase" | "lowercase",
                 transform: `rotate(${layer.rotation}deg)`,
                 transformOrigin: "top left",
                 border: "1px dashed #0099ff",

@@ -37,9 +37,15 @@ export async function POST(req: NextRequest) {
       { message: "User registered successfully.", user: { email: newUser.email, name: newUser.name } },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { message: 'An error occurred while registering the user.', error: error.message },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { message: "An error occurred during registration." },
+      { message: 'An error occurred while registering the user.' },
       { status: 500 }
     );
   }

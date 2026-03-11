@@ -44,7 +44,8 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState, formState } = useFormContext()
 
-  const fieldState = getFieldState(fieldContext.name, formState)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fieldState = getFieldState(fieldContext.name, formState as any)
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
@@ -109,6 +110,7 @@ const FormControl = React.forwardRef<
 
   return (
     <div
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ref={ref as any}
       id={formItemId}
       aria-describedby={

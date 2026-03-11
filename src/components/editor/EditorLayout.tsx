@@ -9,7 +9,7 @@ import { Layers, LayoutTemplate } from 'lucide-react';
 import dynamic from "next/dynamic";
 const CanvasWorkarea = dynamic(() => import("./CanvasWorkarea"), { ssr: false });
 
-export default function EditorLayout({ designId }: { designId: string }) {
+export default function EditorLayout() {
   return (
     <div className="flex h-full w-full flex-col">
       <TopToolbar />

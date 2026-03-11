@@ -48,6 +48,7 @@ interface EditorState {
   toggleLayerLock: (id: string) => void;
 
   // Template hydration
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   applyTemplate: (template: any) => void;
 }
 
@@ -149,9 +150,11 @@ export const useEditorStore = create<EditorState>((set) => ({
       ),
     })),
 
-  applyTemplate: (template) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  applyTemplate: (template: any) =>
     set(() => {
       // Map MongoDB textZones onto our local Zustand TextLayers
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const mappedLayers: TextLayer[] = template.textZones.map((zone: any) => ({
         ...zone,
         type: 'text',

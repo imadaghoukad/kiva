@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Type } from "lucide-react";
 import { useEditorStore, PRESETS } from "@/store/useEditorStore";
@@ -19,7 +18,7 @@ export default function TopToolbar() {
 
   // Find current preset name to display
   const currentPresetName = Object.entries(PRESETS).find(
-    ([_, dims]) => dims.width === canvasSize.width && dims.height === canvasSize.height
+    ([, dims]) => dims.width === canvasSize.width && dims.height === canvasSize.height
   )?.[0] || "Custom Size";
 
   return (
@@ -53,7 +52,7 @@ export default function TopToolbar() {
 
         <div className="h-6 w-px bg-border mx-2" />
         
-        <Button variant="secondary" size="sm" onClick={addTextLayer} className="h-8 gap-2">
+        <Button variant="ghost" size="sm" onClick={addTextLayer} className="h-8 gap-2">
           <Type className="h-4 w-4" />
           <span className="hidden sm:inline-block">Add Text</span>
         </Button>

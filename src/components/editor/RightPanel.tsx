@@ -18,8 +18,6 @@ import {
   AlignLeft, 
   AlignCenter, 
   AlignRight, 
-  AlignJustify,
-  Type
 } from "lucide-react";
 
 export default function RightPanel() {
@@ -36,6 +34,7 @@ export default function RightPanel() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdate = (updates: any) => {
     updateTextLayer(activeLayer.id, updates);
   };
@@ -128,10 +127,11 @@ export default function RightPanel() {
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Alignment & Case</Label>
             
             <div className="grid grid-cols-2 gap-4">
-              {/* @ts-ignore: Radix UI ToggleGroup strictly enforces string[] despite type="single" in some TS contexts */}
               <ToggleGroup 
                 type="single" 
-                value={activeLayer.align as unknown as string[]} 
+                // @ts-expect-error: Radix strict overload mismatch
+                value={activeLayer.align as string} 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(val: any) => val && handleUpdate({ align: val })}
                 className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
               >
@@ -146,10 +146,11 @@ export default function RightPanel() {
                 </ToggleGroupItem>
               </ToggleGroup>
 
-              {/* @ts-ignore: Radix UI ToggleGroup strictly enforces string[] despite type="single" in some TS contexts */}
               <ToggleGroup 
                 type="single" 
-                value={activeLayer.textTransform as unknown as string[]} 
+                // @ts-expect-error: Radix strict overload mismatch
+                value={activeLayer.textTransform as string} 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(val: any) => val && handleUpdate({ textTransform: val })}
                 className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
               >

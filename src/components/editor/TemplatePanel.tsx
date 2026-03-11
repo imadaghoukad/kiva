@@ -45,7 +45,7 @@ export default function TemplatePanel() {
               <Card 
                 key={template._id as unknown as string} 
                 className="cursor-pointer overflow-hidden hover:ring-2 hover:ring-primary transition-all group duration-200"
-                onClick={() => applyTemplate(template as any)} // Will typecast later in store
+                onClick={() => applyTemplate(template)} // Will typecast later in store
               >
                 <div 
                   className="aspect-[4/3] bg-muted w-full relative group-hover:opacity-90 transition-opacity"

@@ -56,7 +56,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        // @ts-ignore
+        // @ts-expect-error: NextAuth dynamically injects the `id` field onto `token` which TS fails to recognizession;
         session.user.id = token.id;
       }
       return session;
