@@ -46,6 +46,9 @@ interface EditorState {
   reorderLayer: (id: string, direction: "up" | "down" | "top" | "bottom") => void;
   toggleLayerVisibility: (id: string) => void;
   toggleLayerLock: (id: string) => void;
+
+  // Template hydration
+  applyTemplate: (template: any) => void;
 }
 
 export const PRESETS = {
@@ -145,4 +148,20 @@ export const useEditorStore = create<EditorState>((set) => ({
         layer.id === id ? { ...layer, locked: !layer.locked } : layer
       ),
     })),
+
+  applyTemplate: (template) =>
+    set(() => {
+      // Map MongoDB textZones onto our local Zustand TextLayers
+      const mappedLayers: TextLayer[] = template.textZones.map((zone: any) => ({
+        ...zone,
+        type: 'text',
+      }));
+
+      return {
+        canvasSize: template.canvasSize,
+        bgImageUrl: template.bgImageUrl,
+        layers: mappedLayers,
+        activeLayerId: null, // Clear selection
+      };
+    }),
 }));
