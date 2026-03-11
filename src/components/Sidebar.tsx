@@ -4,17 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileImage, Settings } from "lucide-react";
 
-export function Sidebar() {
-  const pathname = usePathname();
+export const navLinks = [
+  { name: "My Designs", href: "/designs", icon: LayoutDashboard },
+  { name: "Templates", href: "/templates", icon: FileImage },
+  { name: "Settings", href: "/settings", icon: Settings },
+];
 
-  const navLinks = [
-    { name: "My Designs", href: "/designs", icon: LayoutDashboard },
-    { name: "Templates", href: "/templates", icon: FileImage },
-    { name: "Settings", href: "/settings", icon: Settings },
-  ];
-
+export function SidebarContent({ pathname }: { pathname: string }) {
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-muted/40 px-3 py-4">
+    <>
       <div className="mb-8 px-4 text-2xl font-bold tracking-tight text-primary">
         PostCanvas
       </div>
@@ -36,6 +34,16 @@ export function Sidebar() {
           );
         })}
       </nav>
+    </>
+  );
+}
+
+export function Sidebar() {
+  const pathname = usePathname();
+
+  return (
+    <div className="hidden md:flex h-full w-64 flex-col border-r bg-muted/40 px-3 py-4">
+      <SidebarContent pathname={pathname} />
     </div>
   );
 }

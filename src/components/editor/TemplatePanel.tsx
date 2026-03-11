@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useEditorStore } from '@/store/useEditorStore';
 import { ITemplate } from '@/models/Template';
 
@@ -36,7 +37,17 @@ export default function TemplatePanel() {
 
       <ScrollArea className="flex-1 p-4">
         {loading ? (
-          <div className="text-sm text-muted-foreground text-center mt-10">Loading templates...</div>
+          <div className="grid grid-cols-1 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-[4/3] w-full rounded-none" />
+                <CardContent className="p-3">
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : templates.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center mt-10">No templates found</div>
         ) : (

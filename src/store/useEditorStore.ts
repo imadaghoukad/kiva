@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
+import { toast } from "sonner";
 
 export type Dimensions = {
   width: number;
@@ -187,6 +188,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         type: 'text',
       }));
 
+      toast.success("Template applied to canvas");
+
       return {
         canvasSize: template.canvasSize,
         bgImageUrl: template.bgImageUrl,
@@ -223,11 +226,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         if (res.ok) {
           const data = await res.json();
           set({ designId: data._id });
+          toast.success("Design created successfully!");
+        } else {
+          toast.error("Failed to create design.");
         }
       }
       set({ lastSaved: new Date() });
+      if (state.designId) {
+        toast.success("Design saved successfully!");
+      }
     } catch (error) {
       console.error("Failed to save design", error);
+      toast.error("An error occurred while saving.");
     } finally {
       set({ isSaving: false });
     }
