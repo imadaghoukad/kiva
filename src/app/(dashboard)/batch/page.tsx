@@ -27,14 +27,12 @@ export default async function BatchPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Batch Generation</h1>
-          <p className="text-muted-foreground mt-1">
-            Write your text once and generate graphics across multiple templates instantly.
-          </p>
-        </div>
+    <div className="p-6 space-y-10 animate-in fade-in duration-700">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-black tracking-tight text-foreground">Batch Generation</h1>
+        <p className="text-muted-foreground text-sm font-medium">
+          Scale your content workflow by generating graphics across multiple templates instantly.
+        </p>
       </div>
       
       <BatchClient templates={templates} />
