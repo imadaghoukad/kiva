@@ -6,6 +6,7 @@ import Design from "@/models/Design";
 import Link from "next/link";
 import { PlusCircle, Image as ImageIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { PublishDialog } from "@/components/PublishDialog";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,8 +53,9 @@ export default async function DesignsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {designs.map((design) => (
-            <Link key={design._id.toString()} href={`/editor/${design._id.toString()}`} className="group">
-              <Card className="overflow-hidden border-muted transition-all hover:border-primary hover:shadow-md">
+            <Link key={design._id.toString()} href={`/editor/${design._id.toString()}`} className="group relative block z-0">
+              <Card className="overflow-hidden border-muted transition-all hover:border-primary hover:shadow-md relative">
+                <PublishDialog designId={design._id.toString()} />
                 <div 
                   className="w-full aspect-video bg-muted/30 relative flex items-center justify-center overflow-hidden"
                   style={{

@@ -7,6 +7,7 @@ export interface IDesign extends Document {
   bgImageUrl: string;
   // Store the active text layers exactly as they exist in Zustand
   layers: unknown[]; 
+  publishHistory?: { pageId: string; publishedAt: Date }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +21,10 @@ const DesignSchema: Schema = new Schema({
   },
   bgImageUrl: { type: String, default: "" },
   layers: { type: [Schema.Types.Mixed], default: [] },
+  publishHistory: { 
+    type: [{ pageId: String, publishedAt: Date }], 
+    default: [] 
+  },
 }, { 
   timestamps: true 
 });

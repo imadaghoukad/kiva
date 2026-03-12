@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import FacebookProvider from "next-auth/providers/facebook";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongoose";
 import { User } from "@/models/User";
@@ -18,6 +19,10 @@ declare module "next-auth" {
 
 export const authOptions: NextAuthOptions = {
   providers: [
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID || "",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -60,6 +65,27 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account && account.provider !== "credentials") {
+        await connectToDatabase();
+        if (!user.email) {
+          throw new Error("No email provided by OAuth provider.");
+        }
+        // Check if user exists
+        const existingUser = await User.findOne({ email: user.email });
+        if (!existingUser) {
+          // Create new user
+          const newUser = await User.create({
+            email: user.email,
+            name: user.name || "",
+          });
+          user.id = newUser._id?.toString() || newUser.id;
+        } else {
+          user.id = existingUser._id?.toString() || existingUser.id;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
