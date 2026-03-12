@@ -69,7 +69,12 @@ export function BatchRenderEngine({ templates, textInputs, onComplete }: RenderE
         (template.textZones ?? []).forEach((zone: any) => {
           // User input is keyed by the zone's original text (used as the display label)
           const userValue = textInputs[zone.text];
-          const displayText = (userValue !== undefined && userValue.trim() !== "") ? userValue : zone.text;
+          let displayText = (userValue !== undefined && userValue.trim() !== "") ? userValue : zone.text;
+
+          // Apply text-transform if specified
+          if (zone.textTransform === "uppercase") displayText = displayText.toUpperCase();
+          else if (zone.textTransform === "lowercase") displayText = displayText.toLowerCase();
+          else if (zone.textTransform === "capitalize") displayText = displayText.replace(/\b\w/g, (c: string) => c.toUpperCase());
 
           const konvaText = new Konva.Text({
             x: zone.x,
@@ -83,6 +88,7 @@ export function BatchRenderEngine({ templates, textInputs, onComplete }: RenderE
             align: zone.align ?? "left",
             letterSpacing: zone.letterSpacing ?? 0,
             lineHeight: zone.lineHeight ?? 1,
+            width: zone.width ?? undefined, // Use width if available for alignment
           });
           layer.add(konvaText);
         });
