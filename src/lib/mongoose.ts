@@ -11,6 +11,10 @@ const MONGODB_URI = process.env.MONGODB_URI;
 interface MongooseCache {
   conn: Mongoose | null;
   promise: Promise<Mongoose> | null;
+  memoryServer?: {
+    stop: () => Promise<boolean>;
+    getUri: () => string;
+  };
 }
 
 declare global {
@@ -40,12 +44,17 @@ async function connectToDatabase(): Promise<Mongoose> {
     } else {
       // FALLBACK: Use MongoDB Memory Server if no URI is provided (or if local mongo is down)
       console.log("⚠️ No MONGODB_URI found. Starting MongoDB Memory Server...");
-      try {
-        const { MongoMemoryServer } = await import("mongodb-memory-server");
-        const mongoServer = await MongoMemoryServer.create();
-        const uri = mongoServer.getUri();
+      cached.promise = (async () => {
+        try {
+          const { MongoMemoryServer } = await import("mongodb-memory-server");
+          cached.memoryServer = await MongoMemoryServer.create({
+            instance: {
+              launchTimeout: 60000,
+            },
+          });
+          const uri = cached.memoryServer.getUri();
 
-        cached.promise = mongoose.connect(uri, opts).then(async (m) => {
+          const m = await mongoose.connect(uri, opts);
           console.log("✅ MongoDB Memory Server started at:", uri);
 
           // SEED: Create a default user for testing if it doesn't exist
@@ -72,11 +81,11 @@ async function connectToDatabase(): Promise<Mongoose> {
           }
 
           return m;
-        });
-      } catch (err) {
-        console.error("❌ Failed to start MongoDB Memory Server:", err);
-        throw new Error("Database connection failed and fallback unavailable.");
-      }
+        } catch (err) {
+          console.error("❌ Failed to start MongoDB Memory Server:", err);
+          throw new Error("Database connection failed and fallback unavailable.");
+        }
+      })();
     }
   }
 
