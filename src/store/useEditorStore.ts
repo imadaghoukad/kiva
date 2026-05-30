@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { temporal } from "zundo";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
 
@@ -23,6 +24,18 @@ export type TextLayer = {
   letterSpacing: number;
   lineHeight: number;
   textTransform: "none" | "uppercase" | "lowercase" | "capitalize";
+
+  // Sprint 13 Effects
+  shadowColor?: string;
+  shadowBlur?: number;
+  shadowOffsetX?: number;
+  shadowOffsetY?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  textBgColor?: string;
+  textBgPadding?: number;
+  textBgRadius?: number;
+
   // Layer controls
   visible: boolean;
   locked: boolean;
@@ -31,9 +44,19 @@ export type TextLayer = {
 interface EditorState {
   canvasSize: Dimensions;
   setCanvasSize: (size: Dimensions) => void;
-  
+
   bgImageUrl: string | null;
   setBgImageUrl: (url: string | null) => void;
+
+  bgImageSettings: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    blur?: number;
+    overlayOpacity?: number;
+    overlayColor?: string;
+  };
+  setBgImageSettings: (settings: Partial<EditorState['bgImageSettings']>) => void;
 
   layers: TextLayer[];
   activeLayerId: string | null;
@@ -48,7 +71,8 @@ interface EditorState {
   addTextLayer: () => void;
   updateTextLayer: (id: string, updates: Partial<TextLayer>) => void;
   setActiveLayerId: (id: string | null) => void;
-  
+  duplicateLayer: (id: string) => void;
+
   // Layer list controls
   removeTextLayer: (id: string) => void;
   reorderLayer: (id: string, direction: "up" | "down" | "top" | "bottom") => void;
@@ -63,7 +87,7 @@ interface EditorState {
   saveDesign: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loadDesign: (design: any) => void;
-  
+
   // Export Hook
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stageRef: any | null;
@@ -78,12 +102,17 @@ export const PRESETS = {
   "Facebook Cover": { width: 820, height: 312 },
 };
 
-export const useEditorStore = create<EditorState>((set, get) => ({
+export const useEditorStore = create<EditorState>()(
+  temporal(
+    (set, get) => ({
   canvasSize: PRESETS["Facebook Post"],
   setCanvasSize: (size) => set({ canvasSize: size }),
 
   bgImageUrl: null,
   setBgImageUrl: (url) => set({ bgImageUrl: url }),
+
+  bgImageSettings: {},
+  setBgImageSettings: (settings) => set({ bgImageSettings: { ...get().bgImageSettings, ...settings } }),
 
   layers: [],
   activeLayerId: null,
@@ -128,6 +157,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     })),
 
   setActiveLayerId: (id) => set({ activeLayerId: id }),
+
+  duplicateLayer: (id) =>
+    set((state) => {
+      const layer = state.layers.find((l) => l.id === id);
+      if (!layer) return state;
+
+      const newLayer = {
+        ...layer,
+        id: uuidv4(),
+        x: layer.x + 20,
+        y: layer.y + 20,
+      };
+
+      return {
+        layers: [...state.layers, newLayer],
+        activeLayerId: newLayer.id,
+      };
+    }),
 
   removeTextLayer: (id) =>
     set((state) => ({
@@ -193,11 +240,12 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return {
         canvasSize: template.canvasSize,
         bgImageUrl: template.bgImageUrl,
+        bgImageSettings: template.bgImageSettings || {},
         layers: mappedLayers,
         activeLayerId: null, // Clear selection
       };
     }),
-    
+
   saveDesign: async () => {
     const state = get();
     set({ isSaving: true });
@@ -206,6 +254,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         name: state.designName,
         canvasSize: state.canvasSize,
         bgImageUrl: state.bgImageUrl,
+        bgImageSettings: state.bgImageSettings,
         layers: state.layers,
       };
 
@@ -243,13 +292,24 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
   },
 
-  loadDesign: (design) => 
+  loadDesign: (design) =>
     set(() => ({
       designId: design._id,
       designName: design.name,
       canvasSize: design.canvasSize,
       bgImageUrl: design.bgImageUrl || null,
+      bgImageSettings: design.bgImageSettings || {},
       layers: design.layers || [],
       activeLayerId: null,
     })),
-}));
+  }),
+  {
+    partialize: (state) => ({
+      layers: state.layers,
+      canvasSize: state.canvasSize,
+      bgImageUrl: state.bgImageUrl,
+      bgImageSettings: state.bgImageSettings,
+    }),
+    limit: 50,
+  }
+));

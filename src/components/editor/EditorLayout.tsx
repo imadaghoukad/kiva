@@ -12,9 +12,14 @@ import { useEditorStore } from "@/store/useEditorStore";
 import { useTranslation } from "@/components/providers/I18nProvider";
 import { useEffect } from "react";
 
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { EditorTour } from "@/components/editor/EditorTour";
+
 export default function EditorLayout({ initialDesign }: { initialDesign?: unknown }) {
   const { t } = useTranslation();
   const loadDesign = useEditorStore((state) => state.loadDesign);
+
+  useKeyboardShortcuts();
 
   useEffect(() => {
     if (initialDesign) {
@@ -24,9 +29,10 @@ export default function EditorLayout({ initialDesign }: { initialDesign?: unknow
 
   return (
     <div className="flex h-full w-full flex-col">
+      <EditorTour />
       <TopToolbar />
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-64 border-r bg-background flex flex-col">
+        <div className="w-64 border-r bg-background flex flex-col left-panel-tabs">
           <Tabs defaultValue="templates" className="flex-1 flex flex-col">
             <div className="border-b px-4 py-2">
               <TabsList className="grid w-full grid-cols-2">
@@ -40,23 +46,24 @@ export default function EditorLayout({ initialDesign }: { initialDesign?: unknow
                 </TabsTrigger>
               </TabsList>
             </div>
-            
+
             <TabsContent value="templates" className="flex-1 mt-0 data-[state=active]:flex flex-col border-none p-0 outline-none">
               <TemplatePanel />
             </TabsContent>
-            
+
             <TabsContent value="layers" className="flex-1 mt-0 data-[state=active]:flex flex-col border-none p-0 outline-none">
               <LayerList />
             </TabsContent>
           </Tabs>
         </div>
-        <main className="flex-1 overflow-hidden relative bg-muted/20">
+        <main className="flex-1 overflow-hidden relative bg-muted/20 canvas-workarea-container">
           <div className="absolute inset-0 flex items-center justify-center">
-             {/* <div className="text-muted-foreground">Canvas Area Placeholder</div> */}
              <CanvasWorkarea />
           </div>
         </main>
-        <RightPanel />
+        <div className="right-panel-properties flex h-full">
+           <RightPanel />
+        </div>
       </div>
     </div>
   );

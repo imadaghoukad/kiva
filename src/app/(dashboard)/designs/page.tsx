@@ -6,8 +6,8 @@ import Design from "@/models/Design";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { PublishDialog } from "@/components/PublishDialog";
-import { Plus, MoreVertical, Layout, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DuplicateDesignButton } from "@/components/dashboard/DuplicateDesignButton";
+import { Plus, Layout, Clock } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -93,9 +93,7 @@ export default async function DesignsPage() {
                       {new Date(design.updatedAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 transition-colors">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
+                  <DuplicateDesignButton designId={design._id.toString()} />
                 </div>
                 
                 <div className="flex items-center gap-2 pt-2 border-t border-white/5">

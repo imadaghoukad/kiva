@@ -6,7 +6,9 @@ import { LayoutDashboard, FileImage, Settings, Sparkles, HelpCircle } from "luci
 
 export const navLinks = [
   { name: "My Designs", href: "/designs", icon: LayoutDashboard },
+  { name: "Community Gallery", href: "/gallery", icon: Sparkles },
   { name: "Templates", href: "/templates", icon: FileImage },
+  { name: "My Templates", href: "/templates/mine", icon: Sparkles },
   { name: "Batch Create", href: "/batch", icon: Sparkles }, // Added for visibility
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -30,15 +32,17 @@ export function SidebarContent({ pathname }: { pathname: string }) {
           Main Menu
         </p>
         {navLinks.map((link) => {
-          const isActive = pathname.startsWith(link.href);
+          const isActive = link.href === "/templates"
+            ? pathname === "/templates"
+            : pathname.startsWith(link.href);
           const Icon = link.icon;
           return (
             <Link
               key={link.href}
               href={link.href}
               className={`group flex items-center space-x-3 rounded-xl px-4 py-3 transition-all duration-300 ${
-                isActive 
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]" 
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02]"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:translate-x-1"
               }`}
             >

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { Stage, Layer, Image as KonvaImage, Rect, Text, Transformer } from "react-konva";
+import { Stage, Layer, Image as KonvaImage, Rect, Text, Transformer, Label, Tag } from "react-konva";
 import useImage from "use-image";
 import { useEditorStore } from "@/store/useEditorStore";
 import Konva from "konva";
@@ -15,14 +15,14 @@ export default function CanvasWorkarea() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stageRef = useRef<any>(null);
   const trRef = useRef<Konva.Transformer>(null);
-  
+
   // Expose the stage reference to the store so the toolbar can export it
   useEffect(() => {
     if (stageRef.current) {
       setStageRef(stageRef.current);
     }
   }, [setStageRef]);
-  
+
   const [scale, setScale] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -30,6 +30,7 @@ export default function CanvasWorkarea() {
     canvasSize,
     bgImageUrl,
     setBgImageUrl,
+    bgImageSettings,
     layers,
     activeLayerId,
     setActiveLayerId,
@@ -37,6 +38,13 @@ export default function CanvasWorkarea() {
   } = useEditorStore();
 
   const [bgImage] = useImage(bgImageUrl || "", "anonymous");
+  const bgImageRef = useRef<Konva.Image>(null);
+
+  useEffect(() => {
+    if (bgImage && bgImageRef.current) {
+      bgImageRef.current.cache();
+    }
+  }, [bgImage, bgImageSettings, canvasSize]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -97,8 +105,8 @@ export default function CanvasWorkarea() {
   };
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="absolute inset-0 flex items-center justify-center overflow-hidden"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -120,19 +128,40 @@ export default function CanvasWorkarea() {
         >
           <Layer>
             <Rect name="bgRect" x={0} y={0} width={canvasSize.width} height={canvasSize.height} fill="#ffffff" />
-            
+
             {bgImage && (
-              <KonvaImage name="bgImage" image={bgImage} width={canvasSize.width} height={canvasSize.height} />
+              <KonvaImage
+                ref={bgImageRef}
+                name="bgImage"
+                image={bgImage}
+                width={canvasSize.width}
+                height={canvasSize.height}
+                filters={[Konva.Filters.Brighten, Konva.Filters.Contrast, Konva.Filters.HSL, Konva.Filters.Blur]}
+                brightness={bgImageSettings?.brightness || 0}
+                contrast={bgImageSettings?.contrast || 0}
+                saturation={bgImageSettings?.saturation || 0}
+                blurRadius={bgImageSettings?.blur || 0}
+              />
             )}
-            
-            {!bgImage && (
-              <Text 
+
+            {(!bgImage && !bgImageSettings?.overlayColor) && (
+              <Text
                 name="bgText" text="Drag & Drop Background Image"
                 x={0} y={canvasSize.height / 2} width={canvasSize.width} align="center"
                 fontSize={24} fill="#aaa" listening={false}
               />
             )}
-            
+
+            {bgImageSettings?.overlayOpacity ? (
+              <Rect
+                x={0} y={0}
+                width={canvasSize.width} height={canvasSize.height}
+                fill={bgImageSettings.overlayColor || "#000000"}
+                opacity={bgImageSettings.overlayOpacity}
+                listening={false}
+              />
+            ) : null}
+
             {layers.map((layer) => {
               // Handle CSS text-transform via JS before it hits Konva
               let displayText = layer.text;
@@ -144,58 +173,126 @@ export default function CanvasWorkarea() {
 
               return (
                 <React.Fragment key={layer.id}>
-                  <Text
-                    id={layer.id}
-                    text={displayText}
-                    x={layer.x}
-                    y={layer.y}
-                    fontSize={layer.fontSize}
-                    fontFamily={layer.fontFamily}
-                    fontStyle={layer.fontWeight}
-                    fill={layer.fill}
-                    rotation={layer.rotation}
-                    align={layer.align}
-                    direction={dir}
-                    letterSpacing={layer.letterSpacing}
-                    lineHeight={layer.lineHeight}
-                    draggable={!layer.locked && layer.visible && !isEditing}
-                    visible={layer.visible && !isEditing}
-                    onClick={() => {
-                      if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
-                    }}
-                    onTap={() => {
-                      if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
-                    }}
-                    onDblClick={() => {
-                      if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
-                    }}
-                    onDblTap={() => {
-                      if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
-                    }}
-                    onDragEnd={(e) => {
-                      updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
-                    }}
-                    onTransformEnd={(e) => {
-                      const node = e.target;
-                      const scaleY = node.scaleY();
-                      
-                      node.scaleX(1);
-                      node.scaleY(1);
-                      
-                      updateTextLayer(layer.id, {
-                        x: node.x(),
-                        y: node.y(),
-                        rotation: node.rotation(),
-                        fontSize: Math.max(5, layer.fontSize * scaleY),
-                      });
-                    }}
-                  />
+                  {layer.textBgColor ? (
+                    <Label
+                      id={layer.id}
+                      x={layer.x}
+                      y={layer.y}
+                      rotation={layer.rotation}
+                      draggable={!layer.locked && layer.visible && !isEditing}
+                      visible={layer.visible && !isEditing}
+                      onClick={() => {
+                        if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                      }}
+                      onTap={() => {
+                        if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                      }}
+                      onDblClick={() => {
+                        if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                      }}
+                      onDblTap={() => {
+                        if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                      }}
+                      onDragEnd={(e) => {
+                        updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
+                      }}
+                      onTransformEnd={(e) => {
+                        const node = e.target;
+                        const scaleY = node.scaleY();
+                        node.scaleX(1);
+                        node.scaleY(1);
+                        updateTextLayer(layer.id, {
+                          x: node.x(),
+                          y: node.y(),
+                          rotation: node.rotation(),
+                          fontSize: Math.max(5, layer.fontSize * scaleY),
+                        });
+                      }}
+                    >
+                      <Tag
+                        fill={layer.textBgColor}
+                        cornerRadius={layer.textBgRadius || 0}
+                        lineJoin="round"
+                      />
+                      <Text
+                        text={displayText}
+                        fontSize={layer.fontSize}
+                        fontFamily={layer.fontFamily}
+                        fontStyle={layer.fontWeight}
+                        fill={layer.fill}
+                        align={layer.align}
+                        direction={dir}
+                        letterSpacing={layer.letterSpacing}
+                        lineHeight={layer.lineHeight}
+                        shadowColor={layer.shadowColor}
+                        shadowBlur={layer.shadowBlur}
+                        shadowOffsetX={layer.shadowOffsetX}
+                        shadowOffsetY={layer.shadowOffsetY}
+                        stroke={layer.stroke}
+                        strokeWidth={layer.strokeWidth}
+                        padding={layer.textBgPadding || 0}
+                      />
+                    </Label>
+                  ) : (
+                    <Text
+                      id={layer.id}
+                      text={displayText}
+                      x={layer.x}
+                      y={layer.y}
+                      fontSize={layer.fontSize}
+                      fontFamily={layer.fontFamily}
+                      fontStyle={layer.fontWeight}
+                      fill={layer.fill}
+                      rotation={layer.rotation}
+                      align={layer.align}
+                      direction={dir}
+                      letterSpacing={layer.letterSpacing}
+                      lineHeight={layer.lineHeight}
+                      shadowColor={layer.shadowColor}
+                      shadowBlur={layer.shadowBlur}
+                      shadowOffsetX={layer.shadowOffsetX}
+                      shadowOffsetY={layer.shadowOffsetY}
+                      stroke={layer.stroke}
+                      strokeWidth={layer.strokeWidth}
+                      draggable={!layer.locked && layer.visible && !isEditing}
+                      visible={layer.visible && !isEditing}
+                      onClick={() => {
+                        if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                      }}
+                      onTap={() => {
+                        if (!layer.locked && layer.visible) setActiveLayerId(layer.id);
+                      }}
+                      onDblClick={() => {
+                        if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                      }}
+                      onDblTap={() => {
+                        if (!layer.locked && layer.visible) handleTextDblClick(layer.id);
+                      }}
+                      onDragEnd={(e) => {
+                        updateTextLayer(layer.id, { x: e.target.x(), y: e.target.y() });
+                      }}
+                      onTransformEnd={(e) => {
+                        const node = e.target;
+                        const scaleY = node.scaleY();
+
+                        node.scaleX(1);
+                        node.scaleY(1);
+
+                        updateTextLayer(layer.id, {
+                          x: node.x(),
+                          y: node.y(),
+                          rotation: node.rotation(),
+                          fontSize: Math.max(5, layer.fontSize * scaleY),
+                        });
+                      }}
+                    />
+                  )}
                 </React.Fragment>
               );
             })}
 
-            <Transformer 
-              ref={trRef} 
+            <Transformer
+              ref={trRef}
               boundBoxFunc={(oldBox, newBox) => (newBox.width < 10 || newBox.height < 10 ? oldBox : newBox)}
               enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
             />
@@ -206,7 +303,7 @@ export default function CanvasWorkarea() {
         {editingId && (() => {
           const layer = layers.find(l => l.id === editingId);
           if (!layer) return null;
-          
+
           return (
             <textarea
               autoFocus

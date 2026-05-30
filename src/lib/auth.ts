@@ -1,19 +1,33 @@
-import { NextAuthOptions } from "next-auth";
+import type { DefaultSession, DefaultUser, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import bcrypt from "bcryptjs";
 import connectToDatabase from "@/lib/mongoose";
 import { User } from "@/models/User";
 
-// Declare module to augment NextAuth types to include user ID in Session
+type UserPlan = "free" | "pro";
+type UserRole = "user" | "admin";
+
 declare module "next-auth" {
   interface Session {
-    user: {
+    user: DefaultSession["user"] & {
       id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    }
+      plan: UserPlan;
+      role: UserRole;
+    };
+  }
+
+  interface User extends DefaultUser {
+    plan?: UserPlan;
+    role?: UserRole;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    plan?: UserPlan;
+    role?: UserRole;
   }
 }
 
@@ -57,6 +71,8 @@ export const authOptions: NextAuthOptions = {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
+          plan: user.plan || "free",
+          role: user.role || "user",
         };
       },
     }),
@@ -80,8 +96,12 @@ export const authOptions: NextAuthOptions = {
             name: user.name || "",
           });
           user.id = newUser._id?.toString() || newUser.id;
+          user.plan = newUser.plan || "free";
+          user.role = newUser.role || "user";
         } else {
           user.id = existingUser._id?.toString() || existingUser.id;
+          user.plan = existingUser.plan || "free";
+          user.role = existingUser.role || "user";
         }
       }
       return true;
@@ -89,13 +109,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.plan = user.plan || "free";
+        token.role = user.role || "user";
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        // @ts-expect-error: NextAuth dynamically injects the `id` field onto `token` which TS fails to recognizession;
-        session.user.id = token.id;
+        session.user.id = token.id || "";
+        session.user.plan = token.plan || "free";
+        session.user.role = token.role || "user";
       }
       return session;
     },

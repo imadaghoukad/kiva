@@ -5,6 +5,14 @@ export interface IDesign extends Document {
   name: string;
   canvasSize: { width: number; height: number };
   bgImageUrl: string;
+  bgImageSettings?: {
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    blur?: number;
+    overlayOpacity?: number;
+    overlayColor?: string;
+  };
   // Store the active text layers exactly as they exist in Zustand
   layers: unknown[]; 
   publishHistory?: { pageId: string; publishedAt: Date }[];
@@ -20,6 +28,7 @@ const DesignSchema: Schema = new Schema({
     height: { type: Number, required: true },
   },
   bgImageUrl: { type: String, default: "" },
+  bgImageSettings: { type: Schema.Types.Mixed },
   layers: { type: [Schema.Types.Mixed], default: [] },
   publishHistory: { 
     type: [{ pageId: String, publishedAt: Date }], 

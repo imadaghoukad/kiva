@@ -16,13 +16,15 @@ import {
   SelectGroup,
   SelectLabel
 } from "@/components/ui/select";
-import { 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+import {
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from "lucide-react";
 import { useTranslation } from "@/components/providers/I18nProvider";
 import { ARABIC_FONTS, LATIN_FONTS, loadFont } from "@/lib/fonts";
+
+import BackgroundSettingsPanel from "./BackgroundSettingsPanel";
 
 export default function RightPanel() {
   const { t } = useTranslation();
@@ -31,12 +33,7 @@ export default function RightPanel() {
   const activeLayer = layers.find((l) => l.id === activeLayerId);
 
   if (!activeLayer) {
-    return (
-      <aside className="w-80 border-s bg-background flex flex-col items-center justify-center p-6 text-center text-muted-foreground">
-        <p>No layer selected</p>
-        <p className="text-xs mt-2">Click on a text element to edit its properties.</p>
-      </aside>
-    );
+    return <BackgroundSettingsPanel />;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,16 +46,16 @@ export default function RightPanel() {
       <div className="h-14 border-b flex items-center px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider shrink-0 bg-muted/30">
         {t("text", "panels")}
       </div>
-      
+
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-6">
-          
+
           {/* FONT FAMILY & WEIGHT */}
           <div className="space-y-3">
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Typography</Label>
-            
-            <Select 
-              value={activeLayer.fontFamily || ""} 
+
+            <Select
+              value={activeLayer.fontFamily || ""}
               onValueChange={(val: string | null) => {
                 if (val) {
                   loadFont(val);
@@ -90,8 +87,8 @@ export default function RightPanel() {
             </Select>
 
             <div className="grid grid-cols-2 gap-2">
-              <Select 
-                value={activeLayer.fontWeight} 
+              <Select
+                value={activeLayer.fontWeight}
                 onValueChange={(val) => handleUpdate({ fontWeight: val })}
               >
                 <SelectTrigger>
@@ -104,11 +101,11 @@ export default function RightPanel() {
                   <SelectItem value="bold italic">Bold Italic</SelectItem>
                 </SelectContent>
               </Select>
-              
+
               <div className="flex items-center border rounded-md px-3 h-10 shadow-sm">
-                <Input 
-                  type="number" 
-                  value={Math.round(activeLayer.fontSize)} 
+                <Input
+                  type="number"
+                  value={Math.round(activeLayer.fontSize)}
                   onChange={(e) => handleUpdate({ fontSize: Number(e.target.value) })}
                   className="border-0 p-0 h-6 focus-visible:ring-0 text-end me-1"
                 />
@@ -123,7 +120,7 @@ export default function RightPanel() {
           <div className="space-y-3">
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Color</Label>
             <div className="flex items-center space-x-2">
-              <div 
+              <div
                 className="w-10 h-10 rounded shadow-sm border overflow-hidden shrink-0 cursor-pointer relative"
               >
                 <input
@@ -133,8 +130,8 @@ export default function RightPanel() {
                   className="absolute inset-[-10px] w-16 h-16 cursor-pointer"
                 />
               </div>
-              <Input 
-                value={activeLayer.fill} 
+              <Input
+                value={activeLayer.fill}
                 onChange={(e) => handleUpdate({ fill: e.target.value })}
                 className="flex-1 uppercase font-mono text-sm"
               />
@@ -146,12 +143,12 @@ export default function RightPanel() {
           {/* ALIGNMENT CASED */}
           <div className="space-y-3">
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Alignment & Case</Label>
-            
+
             <div className="grid grid-cols-2 gap-4">
-              <ToggleGroup 
-                type="single" 
+              <ToggleGroup
+                type="single"
                 // @ts-expect-error: Radix strict overload mismatch
-                value={activeLayer.align as string} 
+                value={activeLayer.align as string}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(val: any) => val && handleUpdate({ align: val })}
                 className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
@@ -167,10 +164,10 @@ export default function RightPanel() {
                 </ToggleGroupItem>
               </ToggleGroup>
 
-              <ToggleGroup 
-                type="single" 
+              <ToggleGroup
+                type="single"
                 // @ts-expect-error: Radix strict overload mismatch
-                value={activeLayer.textTransform as string} 
+                value={activeLayer.textTransform as string}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(val: any) => val && handleUpdate({ textTransform: val })}
                 className="justify-start inline-flex border rounded-md overflow-hidden bg-muted/20"
@@ -193,7 +190,7 @@ export default function RightPanel() {
           {/* SPACING */}
           <div className="space-y-4">
             <Label className="text-xs font-semibold text-muted-foreground uppercase">Spacing</Label>
-            
+
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground flex items-center gap-2">
@@ -201,15 +198,15 @@ export default function RightPanel() {
                 </span>
                 <span className="font-mono">{activeLayer.letterSpacing}</span>
               </div>
-              <Slider 
-                value={[activeLayer.letterSpacing]} 
-                min={-2} 
-                max={20} 
+              <Slider
+                value={[activeLayer.letterSpacing]}
+                min={-2}
+                max={20}
                 step={0.5}
                 onValueChange={(val: number | readonly number[]) => {
                   const num = Array.isArray(val) || typeof val !== 'number' ? (val as readonly number[])[0] : val;
                   handleUpdate({ letterSpacing: num || 0 });
-                }} 
+                }}
               />
             </div>
 
@@ -220,17 +217,147 @@ export default function RightPanel() {
                 </span>
                 <span className="font-mono">{activeLayer.lineHeight}</span>
               </div>
-              <Slider 
-                value={[activeLayer.lineHeight]} 
-                min={0.5} 
-                max={2.5} 
+              <Slider
+                value={[activeLayer.lineHeight]}
+                min={0.5}
+                max={2.5}
                 step={0.1}
                 onValueChange={(val: number | readonly number[]) => {
                   const num = Array.isArray(val) || typeof val !== 'number' ? (val as readonly number[])[0] : val;
                   handleUpdate({ lineHeight: num || 1 });
-                }} 
+                }}
               />
             </div>
+          </div>
+
+          <Separator />
+
+          {/* EFFECTS */}
+          <div className="space-y-4">
+            <Label className="text-xs font-semibold text-muted-foreground uppercase">Effects</Label>
+
+            {/* Outline */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Stroke / Outline</span>
+                <span className="font-mono">{activeLayer.strokeWidth || 0}px</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded border overflow-hidden shrink-0 cursor-pointer relative">
+                  <input
+                    type="color"
+                    value={activeLayer.stroke || "#000000"}
+                    onChange={(e) => handleUpdate({ stroke: e.target.value })}
+                    className="absolute inset-[-5px] w-12 h-12 cursor-pointer"
+                  />
+                </div>
+                <Slider
+                  value={[activeLayer.strokeWidth || 0]}
+                  min={0} max={10} step={0.5}
+                  onValueChange={(val: number | readonly number[]) => {
+                    const num = Array.isArray(val) ? val[0] : val;
+                    handleUpdate({ strokeWidth: num });
+                  }}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            {/* Drop Shadow */}
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Drop Shadow</span>
+                <span className="font-mono">{activeLayer.shadowBlur || 0}px</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded border overflow-hidden shrink-0 cursor-pointer relative">
+                  <input
+                    type="color"
+                    value={activeLayer.shadowColor || "#000000"}
+                    onChange={(e) => handleUpdate({ shadowColor: e.target.value })}
+                    className="absolute inset-[-5px] w-12 h-12 cursor-pointer"
+                  />
+                </div>
+                <Slider
+                  value={[activeLayer.shadowBlur || 0]}
+                  min={0} max={40} step={1}
+                  onValueChange={(val: number | readonly number[]) => {
+                    const num = Array.isArray(val) ? val[0] : val;
+                    handleUpdate({ shadowBlur: num });
+                  }}
+                  className="flex-1"
+                />
+              </div>
+
+              {/* Conditional shadow offsets */}
+              {Boolean(activeLayer.shadowBlur && activeLayer.shadowBlur > 0) && (
+                 <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="space-y-2">
+                      <span className="text-xs text-muted-foreground">Offset X</span>
+                      <Slider value={[activeLayer.shadowOffsetX || 0]} min={-50} max={50} step={1} onValueChange={(val) => handleUpdate({ shadowOffsetX: Array.isArray(val) ? val[0] : val })} />
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-xs text-muted-foreground">Offset Y</span>
+                      <Slider value={[activeLayer.shadowOffsetY || 0]} min={-50} max={50} step={1} onValueChange={(val) => handleUpdate({ shadowOffsetY: Array.isArray(val) ? val[0] : val })} />
+                    </div>
+                 </div>
+              )}
+            </div>
+
+            {/* Background Shape */}
+            <div className="space-y-3 pt-4 border-t border-white/5 mt-4">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground font-semibold">Label Background</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded border overflow-hidden shrink-0 cursor-pointer relative mt-1">
+                  <input
+                    type="color"
+                    value={activeLayer.textBgColor || "#ffffff"}
+                    onChange={(e) => handleUpdate({ textBgColor: e.target.value })}
+                    className="absolute inset-[-5px] w-12 h-12 cursor-pointer"
+                  />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] text-muted-foreground uppercase">
+                      <span>Padding</span>
+                      <span className="font-mono">{activeLayer.textBgPadding || 0}px</span>
+                    </div>
+                    <Slider
+                      value={[activeLayer.textBgPadding || 0]}
+                      min={0} max={100} step={1}
+                      onValueChange={(val: number | readonly number[]) => handleUpdate({ textBgPadding: Array.isArray(val) ? val[0] : val })}
+                      className="flex-1"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[10px] text-muted-foreground uppercase">
+                      <span>Border Radius</span>
+                      <span className="font-mono">{activeLayer.textBgRadius || 0}px</span>
+                    </div>
+                    <Slider
+                      value={[activeLayer.textBgRadius || 0]}
+                      min={0} max={100} step={1}
+                      onValueChange={(val: number | readonly number[]) => handleUpdate({ textBgRadius: Array.isArray(val) ? val[0] : val })}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {(activeLayer.textBgColor) && (
+                <div className="flex justify-end mt-2">
+                   <button
+                     onClick={() => handleUpdate({ textBgColor: undefined, textBgPadding: 0, textBgRadius: 0 })}
+                     className="text-[10px] uppercase font-bold text-red-400 hover:text-red-300 transition-colors"
+                   >
+                     Remove Background
+                   </button>
+                </div>
+              )}
+            </div>
+
           </div>
 
         </div>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Shield, Bell, Zap } from "lucide-react";
+import { UpgradeButton } from "./UpgradeButton";
 
 export default async function SettingsPage() {
   const session = await getServerSession(authOptions);
@@ -93,9 +94,7 @@ export default async function SettingsPage() {
                 </CardDescription>
              </CardHeader>
              <CardContent className="p-8 pt-0">
-                <Button className="w-full h-12 rounded-xl bg-foreground text-background hover:bg-foreground/90 font-black tracking-tight">
-                   Upgrade Now
-                </Button>
+                <UpgradeButton />
              </CardContent>
            </Card>
            

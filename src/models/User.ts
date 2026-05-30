@@ -6,6 +6,8 @@ export interface IUser extends Document {
   password?: string; // Optional because OAuth users might not have a password
   createdAt?: Date;
   updatedAt?: Date;
+  plan?: 'free' | 'pro';
+  role?: 'user' | 'admin';
 }
 
 const UserSchema: Schema<IUser> = new Schema(
@@ -24,6 +26,16 @@ const UserSchema: Schema<IUser> = new Schema(
       type: String,
       required: false, // Not required for OAuth users
       select: false, // Don't return password by default
+    },
+    plan: {
+      type: String,
+      enum: ['free', 'pro'],
+      default: 'free',
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
     },
   },
   {

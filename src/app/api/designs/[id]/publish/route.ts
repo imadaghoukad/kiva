@@ -16,7 +16,11 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json();
-    const { pageId, caption } = body;
+    const { pageId, scheduled_publish_time } = body;
+
+    if (scheduled_publish_time && session?.user?.plan !== 'pro') {
+      return NextResponse.json({ error: "Scheduling is a Pro feature" }, { status: 403 });
+    }
 
     await connectToDatabase();
 
@@ -31,20 +35,22 @@ export async function POST(
 
     // --- FACEBOOK GRAPH API INTEGRATION (Mock / Prototype) ---
     // In a full production app:
-    // 1. We would fetch the logged-in user's Facebook Page Access Token from our DB.
-    // 2. We'd convert the Konva JSON state to a server-side image (e.g. via Puppeteer, 
-    //    or by having the client upload the image to R2 simultaneously and passing that URL).
-    // 3. We'd call `POST /v19.0/${pageId}/photos` with `url=` and `message=caption`.
+    // ...
+    // If scheduled_publish_time exists, we pass it along with published=false
 
-    console.log(`[FB Publish] Mock publishing design ${id} to page ${pageId} with caption: ${caption}`);
+    const isScheduling = !!scheduled_publish_time;
+    console.log(`[FB Publish] Mock ${isScheduling ? 'scheduling' : 'publishing'} design ${id} to page ${pageId}. Scheduled time: ${scheduled_publish_time}`);
 
     // Update design document history
     if (!design.publishHistory) {
       design.publishHistory = [];
     }
-    design.publishHistory.push({ 
-      pageId, 
-      publishedAt: new Date() 
+
+    design.publishHistory.push({
+      pageId,
+      publishedAt: new Date(),
+      status: isScheduling ? 'scheduled' : 'published',
+      scheduledFor: isScheduling ? new Date(scheduled_publish_time * 1000) : null,
     });
     await design.save();
 
